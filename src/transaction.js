@@ -1,5 +1,4 @@
 //CHallenge 2 send transaction
-
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -9,7 +8,6 @@ var keypair;
 
 const initializeKeypair = async() => {
     const secret = JSON.parse(process.env.PRIVATE_KEY);
-    console.log('I know your secret: ' + secret);
     const secretKey = Uint8Array.from(secret);
     const keypairFromSecretKey = Web3.Keypair.fromSecretKey(secretKey);
     keypair = keypairFromSecretKey;
