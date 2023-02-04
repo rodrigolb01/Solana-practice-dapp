@@ -1,10 +1,11 @@
 import * as Web3 from '@solana/web3.js';
-import * as borsh from '@project-serum/borsh';
 import { Buffer } from 'buffer';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { FC } from 'react';
 import { Movie } from './models/Movie';
-import React from 'react'
+import { useState } from 'react'
+
+const MOVIE_REVIEW_PROGRAM_ID = 'CenYq6bDRB7p73EjsPEpiYN7uveyPUTdXkDkgUduboaN';
 
 
 export const Serialisation: FC = () => {
@@ -13,26 +14,35 @@ export const Serialisation: FC = () => {
     const { connection } = useConnection();
     const { publicKey, sendTransaction } = useWallet();
 
+    const [movieTitle, setMovieTitle] = useState('');
+    const [movieRating, setMovieRating] = useState(0);
+    const [movieDescription, setMovieDescription] = useState('');
+    const [reviews, setReviews] = useState<Movie[]>([]);
+
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
 
-        const schema = new Movie('Moonlight ', 5, 'noice');
-        handleTransactionSubmit(schema);
+        if (!movieTitle || !movieRating || !movieDescription) {
+            console.log('invalid fields');
+            return;
+        }
+
+        const movie: Movie = new Movie(movieTitle, movieRating, movieDescription);
+        handleTransactionSubmit(movie);
     }
 
-    const handleTransactionSubmit = async (schema: Movie) => {
+    const handleTransactionSubmit = async (movie: Movie) => {
         if (!publicKey) {
             console.log('please connect to your wallet');
             return;
         }
 
-        const buffer = schema.serialize();
+        const buffer = movie.serialize();
         const transaction = new Web3.Transaction();
-        const MOVIE_REVIEW_PROGRAM_ID = 'CenYq6bDRB7p73EjsPEpiYN7uveyPUTdXkDkgUduboaN';
 
-        const [pda] = await Web3.PublicKey.findProgramAddress(
-            [publicKey.toBuffer(), Buffer.from(schema.title)],
+        const [pda] = Web3.PublicKey.findProgramAddressSync(
+            [publicKey.toBuffer(), Buffer.from(movie.title)],
             new Web3.PublicKey(MOVIE_REVIEW_PROGRAM_ID)
         );
 
@@ -63,17 +73,43 @@ export const Serialisation: FC = () => {
         transaction.add(instruction);
 
         try {
-            let txid = await sendTransaction(transaction, connection);
+            let txid = await sendTransaction(transaction, connection); //
+            setReviews(reviews => [...reviews, movie]);
+            console.log(reviews);
             console.log(`Transaction submitted: https://explorer.solana.com/tx/${txid}?cluster=devnet`);
 
         } catch (error) {
             console.log(JSON.stringify(error));
+            return;
         }
     }
 
+    // const renderReviews = () =>{
+    //     if()
+    // }
+
     return (
         <div>
-            <button onClick={handleSubmit}>send</button>
+            <div>
+                <div>
+                    <label>Title</label>
+                    <input type={'text'} onChange={(e) => { setMovieTitle(e.target.value) }} value={movieTitle}></input>
+                </div>
+                <br />
+                <div>
+                    <label>Rating</label>
+                    <input type={'number'} onChange={(e) => { setMovieRating(Number(e.target.value)) }} value={movieRating}></input>
+                </div>
+                <br />
+                <div>
+                    <label>Description</label>
+                    <input type={'text'} onChange={(e) => { setMovieDescription(e.target.value) }} value={movieDescription}></input>
+                </div>
+                <button onClick={handleSubmit}>send</button>
+            </div>
+            <div>
+
+            </div>
         </div>
     )
 }

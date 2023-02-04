@@ -9,6 +9,7 @@ import * as Web3 from '@solana/web3.js'
 import { BalanceDisplay } from './components/BalanceDisplay';
 import { Buffer } from 'buffer';
 import { Serialisation } from './components/Serialisation'
+import { StudentsIntro } from './components/StudentsIntro';
 Buffer.from('anything', 'base64');
 
 
@@ -21,7 +22,7 @@ const App: NextPage = (props: any) => {
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={[wallet]}>
         <WalletModalProvider>
-          <Serialisation></Serialisation>
+          <StudentsIntro></StudentsIntro>
           <WalletMultiButton />
           <BalanceDisplay></BalanceDisplay>
         </WalletModalProvider>
